@@ -1,0 +1,193 @@
+// DAZ Studio version 4.10.0.123 filetype DAZ Script
+
+	var nMaxSelectedSkeletons = Scene.getNumSelectedSkeletons();
+
+	if(nMaxSelectedSkeletons>1 || nMaxSelectedSkeletons<1){
+		MessageBox.critical( qsTr("Selected Only Figure"), qsTr("Critical"), qsTr("&OK") );
+		return;
+	}
+
+	//if(Scene)
+	var aSelectedSkeletonList = Scene.getSelectedSkeletonList();
+	var oSelectedSkeleton = aSelectedSkeletonList[0];
+
+	var oFileNameScript = DzFile(getScriptFileName());
+
+	// Create a basic dialog
+	var oDlg = new DzBasicDialog();
+
+	// Get the wrapped widget for the dialog
+	var oDlgWgt = oDlg.getWidget();
+	
+	// Set the title of the dialog
+	oDlg.caption = "Transforms Setting CSV";
+	
+	// Strip the space for a settings key
+	var sKey = oDlg.caption.replace( / /g, "" ) + "Dlg";
+	
+	// Set an [unique] object name on the wrapped dialog widget;
+	// this is used for recording position and size separately
+	// from all other [uniquely named] DzBasicDialog instances
+	oDlgWgt.objectName = sKey;
+
+	var oVGBDlg = new DzVGroupBox( oDlg );
+
+	var wVGBFolder = new DzVGroupBox( oVGBDlg );
+	wVGBFolder.title = "Input CSV :";
+	wVGBFolder.columns = 2;
+	var g_wEditFolder = new DzLineEdit( wVGBFolder );
+	g_wEditFolder.minWidth = 200;
+	g_wEditFolder.text = String("%1/%2").arg(oFileNameScript.path()).arg("setting.csv");
+	var wButtonFolder = addButtonOnGroupBox( wVGBFolder, "Select Folder", selectFolder );
+
+	var g_wTextBrowser = new DzTextEdit(oVGBDlg);
+	g_wTextBrowser.readOnly = true;
+	var oTextBrowser = g_wTextBrowser.getWidget();
+	g_wTextBrowser.objectName = String("%1LocalLView").arg( sKey );
+
+	var wButton = addButtonOnGroupBox( oVGBDlg, "Setting", processing);
+
+	// Add the GroupBox to the dialog
+	oDlg.addWidget( oVGBDlg, 0, DzWidget.AlignCenter );
+
+	// Get the minimum size of the dialog
+	var sizeHint = oDlgWgt.minimumSizeHint;
+	
+	// Set the fixed size of the dialog
+//	oDlg.setFixedSize( sizeHint.width, sizeHint.height );
+	
+	// Set the text on the accept button
+	oDlg.setAcceptButtonText("Close");
+	// Hide the cancel button
+	oDlg.showCancelButton( false );
+
+	oDlg.exec();
+
+
+/*********************************************************************/
+//
+/*********************************************************************/
+function addButtonOnGroupBox( gb, text, func ){
+	var wButton = new DzPushButton( gb );
+	wButton.text = text;
+	connect( wButton, "clicked()", func );
+	return( wButton );
+}
+
+
+/*********************************************************************/
+//
+/*********************************************************************/
+function selectFolder(){
+	var sFile = FileDialog.doFileDialog(true, "Select a CSV File", oFileNameScript.path(), "CSV Files (*.csv)" );
+	if( sFile ){
+		g_wEditFolder.text = sFile;
+	}
+}
+
+
+/*********************************************************************/
+//
+function processing()
+{
+
+	var aAllBones = oSelectedSkeleton.getAllBones();
+
+	var oStringHelper = new DzStringHelper();
+
+	var oFileCSV = new DzFile(g_wEditFolder.text);
+	if ( oFileCSV.open( oFileCSV.ReadOnly ) ) {
+		var aAllText = oFileCSV.readLines();
+	}
+	oFileCSV.close();
+
+	var regxPair = new RegExp( "^-?\\d+\\.?\\d*$" );
+
+	for( var i = 1; i < aAllText.length; i++ ){
+		var aLineText = oStringHelper.stripCRLF(aAllText[i]).split(",");
+		var oRegexp = new RegExp( aLineText[0] );
+
+		for( var j = 0; j < aAllBones.length; j++ ){
+			if( oRegexp.exactMatch(aAllBones[j].getLabel()) ){
+				g_wTextBrowser.append( String('Match: %1 = %2').arg( aAllBones[j].getLabel() ).arg( aLineText[0] ) );
+
+				var oProperty;
+				for( var nText = 1; nText < aLineText.length; nText++ ){
+
+					if(nText == 1){
+						oProperty = aAllBones[j].getXPosControl();
+					}
+					if(nText == 8){
+						oProperty = aAllBones[j].getYPosControl();
+					}
+					if(nText == 15){
+						oProperty = aAllBones[j].getZPosControl();
+					}
+					if(nText == 22){
+						oProperty = aAllBones[j].getXRotControl();
+					}
+					if(nText == 29){
+						oProperty = aAllBones[j].getYRotControl();
+					}
+					if(nText == 36){
+						oProperty = aAllBones[j].getZRotControl();
+					}
+
+					g_wTextBrowser.append( String('Debug: Property=%1 Cell=%2').arg( oProperty.getLabel() ).arg( aLineText[nText] ) );
+
+					switch( nText%7 ){
+						case 1:
+							if(aLineText[nText].toLowerCase().search("check")>-1 ){
+								oProperty.setHidden(true);
+								g_wTextBrowser.append( String('Debug: Property=%1 Hidden').arg( oProperty.getLabel() ) );
+							}
+							break;
+						case 2:
+							if(aLineText[nText].toLowerCase().search("check")>-1 ){
+								oProperty.lock(true);
+								g_wTextBrowser.append( String('Debug: Property=%1 Locked').arg( oProperty.getLabel() ) );
+							}
+							break;
+						case 3:
+							if(aLineText[nText].toLowerCase().search("check")>-1 ){
+								oProperty.setIsClamped(true);
+								g_wTextBrowser.append( String('Debug: Property=%1 Limits').arg( oProperty.getLabel() ) );
+							}
+							break;
+						case 4:
+							if(aLineText[nText].length>0 && aLineText[nText].search(regxPair)>-1 ){
+								oProperty.setMin(parseFloat(aLineText[nText]));
+								g_wTextBrowser.append( String('Debug: Property=%1 Min').arg( parseFloat(aLineText[nText]) ) );
+							}
+							break;
+						case 5:
+							if(aLineText[nText].length>0 && aLineText[nText].search(regxPair)>-1 ){
+								oProperty.setMax(parseFloat(aLineText[nText]));
+								g_wTextBrowser.append( String('Debug: Property=%1 Max').arg( parseFloat(aLineText[nText]) ) );
+							}
+							break;
+						case 6:
+							if(aLineText[nText].length>0 && aLineText[nText].search(regxPair)>-1 ){
+								oProperty.setDefaultValue(parseFloat(aLineText[nText]));
+								g_wTextBrowser.append( String('Debug: Property=%1 Default').arg( parseFloat(aLineText[nText]) ) );
+							}
+							break;
+						case 0:
+							if(aLineText[nText].length>0 && aLineText[nText].search(regxPair)>-1 ){
+								oProperty.setSensitivity(parseFloat(aLineText[nText]));
+								g_wTextBrowser.append( String('Debug: Property=%1 Nudge').arg( parseFloat(aLineText[nText]) ) );
+							}
+							break;
+						default:
+							g_wTextBrowser.append( String('Error: nText=%1 expression=%2').arg( nText ).arg( nText%7 ) );
+						break;
+					}
+				}
+
+			}
+		}
+	}
+
+	g_wTextBrowser.append("Complete");
+
+}
