@@ -133,49 +133,40 @@ function processing()
 						oProperty = aAllBones[j].getZRotControl();
 					}
 
-					g_wTextBrowser.append( String('Debug: Property=%1 Cell=%2').arg( oProperty.getLabel() ).arg( aLineText[nText] ) );
-
 					switch( nText%7 ){
 						case 1:
 							if(aLineText[nText].toLowerCase().search("check")>-1 ){
 								oProperty.setHidden(true);
-								g_wTextBrowser.append( String('Debug: Property=%1 Hidden').arg( oProperty.getLabel() ) );
 							}
 							break;
 						case 2:
 							if(aLineText[nText].toLowerCase().search("check")>-1 ){
 								oProperty.lock(true);
-								g_wTextBrowser.append( String('Debug: Property=%1 Locked').arg( oProperty.getLabel() ) );
 							}
 							break;
 						case 3:
 							if(aLineText[nText].toLowerCase().search("check")>-1 ){
 								oProperty.setIsClamped(true);
-								g_wTextBrowser.append( String('Debug: Property=%1 Limits').arg( oProperty.getLabel() ) );
 							}
 							break;
 						case 4:
 							if(aLineText[nText].length>0 && aLineText[nText].search(regxPair)>-1 ){
 								oProperty.setMin(parseFloat(aLineText[nText]));
-								g_wTextBrowser.append( String('Debug: Property=%1 Min').arg( parseFloat(aLineText[nText]) ) );
 							}
 							break;
 						case 5:
 							if(aLineText[nText].length>0 && aLineText[nText].search(regxPair)>-1 ){
 								oProperty.setMax(parseFloat(aLineText[nText]));
-								g_wTextBrowser.append( String('Debug: Property=%1 Max').arg( parseFloat(aLineText[nText]) ) );
 							}
 							break;
 						case 6:
 							if(aLineText[nText].length>0 && aLineText[nText].search(regxPair)>-1 ){
 								oProperty.setDefaultValue(parseFloat(aLineText[nText]));
-								g_wTextBrowser.append( String('Debug: Property=%1 Default').arg( parseFloat(aLineText[nText]) ) );
 							}
 							break;
 						case 0:
 							if(aLineText[nText].length>0 && aLineText[nText].search(regxPair)>-1 ){
 								oProperty.setSensitivity(parseFloat(aLineText[nText]));
-								g_wTextBrowser.append( String('Debug: Property=%1 Nudge').arg( parseFloat(aLineText[nText]) ) );
 							}
 							break;
 						default:
