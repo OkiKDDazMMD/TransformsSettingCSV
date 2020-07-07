@@ -117,61 +117,82 @@ function processing()
 					if(nText == 1){
 						oProperty = aAllBones[j].getXPosControl();
 					}
-					if(nText == 8){
+					if(nText == 9){
 						oProperty = aAllBones[j].getYPosControl();
 					}
-					if(nText == 15){
+					if(nText == 16){
 						oProperty = aAllBones[j].getZPosControl();
 					}
-					if(nText == 22){
+					if(nText == 23){
 						oProperty = aAllBones[j].getXRotControl();
 					}
-					if(nText == 29){
+					if(nText == 30){
 						oProperty = aAllBones[j].getYRotControl();
 					}
-					if(nText == 36){
+					if(nText == 37){
 						oProperty = aAllBones[j].getZRotControl();
 					}
 
-					switch( nText%7 ){
+					switch( nText%8 ){
+						// Label
 						case 1:
-							if(aLineText[nText].toLowerCase().search("check")>-1 ){
-								oProperty.setHidden(true);
+							if( aLineText[nText].length > 0 ){
+								oProperty.setLabel(aLineText[nText]);
 							}
 							break;
+
+						// Hidden
 						case 2:
-							if(aLineText[nText].toLowerCase().search("check")>-1 ){
-								oProperty.lock(true);
+							if( aLineText[nText].length > 0 ){
+								setCheck(aLineText[nText], 2, oProperty);
 							}
 							break;
+
+						// Locked
 						case 3:
-							if(aLineText[nText].toLowerCase().search("check")>-1 ){
-								oProperty.setIsClamped(true);
+							if( aLineText[nText].length > 0 ){
+								setCheck(aLineText[nText], 3, oProperty);
 							}
 							break;
+
+						// Limits
 						case 4:
-							if(aLineText[nText].length>0 && aLineText[nText].search(regxPair)>-1 ){
+							if( aLineText[nText].length > 0 ){
+								setCheck(aLineText[nText], 4, oProperty);
+							}
+							break;
+
+						// Min
+						case 5:
+							if( aLineText[nText].length>0 && aLineText[nText].search(regxPair)>-1 ){
 								oProperty.setMin(parseFloat(aLineText[nText]));
 							}
 							break;
-						case 5:
-							if(aLineText[nText].length>0 && aLineText[nText].search(regxPair)>-1 ){
+
+						// Max
+						case 6:
+							if( aLineText[nText].length>0 && aLineText[nText].search(regxPair)>-1 ){
 								oProperty.setMax(parseFloat(aLineText[nText]));
 							}
 							break;
-						case 6:
-							if(aLineText[nText].length>0 && aLineText[nText].search(regxPair)>-1 ){
+
+						// Default
+						case 7:
+							if( aLineText[nText].length>0 && aLineText[nText].search(regxPair)>-1 ){
 								oProperty.setDefaultValue(parseFloat(aLineText[nText]));
 							}
 							break;
+
+						// Nudge
 						case 0:
 							if(aLineText[nText].length>0 && aLineText[nText].search(regxPair)>-1 ){
 								oProperty.setSensitivity(parseFloat(aLineText[nText]));
 							}
 							break;
+
 						default:
-							g_wTextBrowser.append( String('Error: nText=%1 expression=%2').arg( nText ).arg( nText%7 ) );
-						break;
+							g_wTextBrowser.append( String('Error: nText=%1 expression=%2').arg( nText ).arg( nText%8 ) );
+							break;
 					}
 				}
 
@@ -180,5 +201,46 @@ function processing()
 	}
 
 	g_wTextBrowser.append("Complete");
+
+}
+
+
+/*********************************************************************/
+//
+function setCheck( sCellText, nKind, oProperty)
+{
+	var bCheckUnmatch = true;
+	var bCheck = true;
+
+	if( sCellText.toLowerCase().search("check")>-1 ){
+		bCheckUnmatch = false;
+	}
+
+	if( sCellText.toLowerCase().search("uncheck")>-1 ){
+		bCheckUnmatch = false;
+		bCheck = false;
+	}
+
+	if(bCheckUnmatch){
+		return;
+	}
+
+	switch( nKind ){
+		case 2:
+			oProperty.setHidden(bCheck);
+		break;
+
+		case 3:
+			oProperty.lock(bCheck);
+		break;
+
+		case 4:
+			oProperty.setIsClamped(bCheck);
+		break;
+
+		default:
+			g_wTextBrowser.append( String('function setCheck nKind=%1').arg( nKind ) );
+		break;
+	}
 
 }
