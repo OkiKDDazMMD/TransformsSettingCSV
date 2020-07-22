@@ -120,16 +120,16 @@ function processing()
 					if(nText == 9){
 						oProperty = aAllBones[j].getYPosControl();
 					}
-					if(nText == 16){
+					if(nText == 17){
 						oProperty = aAllBones[j].getZPosControl();
 					}
-					if(nText == 23){
+					if(nText == 25){
 						oProperty = aAllBones[j].getXRotControl();
 					}
-					if(nText == 30){
+					if(nText == 33){
 						oProperty = aAllBones[j].getYRotControl();
 					}
-					if(nText == 37){
+					if(nText == 41){
 						oProperty = aAllBones[j].getZRotControl();
 					}
 
